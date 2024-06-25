@@ -1,0 +1,9 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer components {
+  button {
+    @apply px-4 py-1 transition-transform rounded-sm bg-zinc-900 text-zinc-50 hover:-translate-y-0.5 ease-linear;
+  }
+}
