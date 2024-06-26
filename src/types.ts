@@ -5,4 +5,6 @@ export interface PetStats {
   happiness: number
 
   sleeping: boolean
+  playing: boolean
+  eating: boolean
 }

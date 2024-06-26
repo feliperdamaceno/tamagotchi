@@ -16,29 +16,63 @@ import { PetStats } from '@/types'
 
 const TICK_TIME = 1000 // milliseconds
 const INITIAL_ENERGY = 100
-const BASE_MULTIPLIER = 2
+const BASE_MULTIPLIER = 5 // multiples of 5 and 10
 
 interface GameState {
-  status: PetStats
+  stats: PetStats
   play: () => void
+  sleep: () => void
 }
 
 export const useGameStore = create<GameState>((set, get) => ({
-  status: {
+  stats: {
     energy: 60,
     health: 100,
     hunger: 100,
     happiness: 100,
-    sleeping: false
+    sleeping: false,
+    playing: false,
+    eating: false
   },
 
   play: () => {
+    if (get().stats.sleeping) return
+
+    set(({ stats: status }) => ({
+      stats: { ...status, playing: !status.playing }
+    }))
+
     const interval = setInterval(() => {
-      if (get().status.energy === INITIAL_ENERGY) return clearInterval(interval)
-      set((state) => ({
-        status: {
-          ...state.status,
-          energy: state.status.energy + BASE_MULTIPLIER * 1
+      if (get().stats.energy <= 0) {
+        clearInterval(interval)
+        set(({ stats: status }) => ({ stats: { ...status, playing: false } }))
+        return get().sleep()
+      }
+
+      if (!get().stats.playing) return clearInterval(interval)
+
+      set(({ stats: status }) => ({
+        stats: {
+          ...status,
+          energy: status.energy - BASE_MULTIPLIER * 2
+        }
+      }))
+    }, TICK_TIME)
+  },
+
+  sleep: () => {
+    set(({ stats: status }) => ({ stats: { ...status, sleeping: true } }))
+
+    const interval = setInterval(() => {
+      if (get().stats.energy >= INITIAL_ENERGY) {
+        set(({ stats: status }) => ({ stats: { ...status, sleeping: false } }))
+        return clearInterval(interval)
+      }
+
+      set(({ stats: status }) => ({
+        stats: {
+          ...status,
+          energy: status.energy + BASE_MULTIPLIER * 1
         }
       }))
     }, TICK_TIME)
