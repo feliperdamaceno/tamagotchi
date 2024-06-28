@@ -1,6 +1,6 @@
 import { create } from 'zustand'
 
-import { PetStats } from '@/types'
+import { Pet, PET_STATUS } from '@/types'
 
 /*
   Hunger, Happiness, Health decrease over time.
@@ -10,69 +10,73 @@ import { PetStats } from '@/types'
   Cleaning restore Health.
   Sleeping restore Energy.
 
-  Status:
-    Speeping: Boolean
+  Status: Idle | Eating | Playing | Sleeping | Cleaning
 */
 
+const BASE_ENERGY = 100
+const BASE_HEALTH = 100
+const BASE_HAPPYNESS = 100
+const BASE_HUNGER = 100
+
 const TICK_TIME = 1000 // milliseconds
-const INITIAL_ENERGY = 100
-const BASE_MULTIPLIER = 5 // multiples of 5 and 10
+const BASE_MULTIPLIER = 10 // multiples of 5 and 10
 
 interface GameState {
-  stats: PetStats
+  pet: Pet
   play: () => void
   sleep: () => void
 }
 
+const toggleStatus = (status: PET_STATUS) => {
+  useGameStore.setState(({ pet }) => ({
+    pet: { ...pet, status: pet.status === status ? PET_STATUS.IDLE : status }
+  }))
+}
+
 export const useGameStore = create<GameState>((set, get) => ({
-  stats: {
-    energy: 60,
-    health: 100,
-    hunger: 100,
-    happiness: 100,
-    sleeping: false,
-    playing: false,
-    eating: false
+  pet: {
+    energy: BASE_ENERGY,
+    health: BASE_HEALTH,
+    hunger: BASE_HUNGER,
+    happiness: BASE_HAPPYNESS,
+    status: PET_STATUS.IDLE
   },
 
   play: () => {
-    if (get().stats.sleeping) return
-
-    set(({ stats: status }) => ({
-      stats: { ...status, playing: !status.playing }
-    }))
+    toggleStatus(PET_STATUS.PLAYING)
 
     const interval = setInterval(() => {
-      if (get().stats.energy <= 0) {
+      if (get().pet.energy <= 0) {
         clearInterval(interval)
-        set(({ stats: status }) => ({ stats: { ...status, playing: false } }))
         return get().sleep()
       }
 
-      if (!get().stats.playing) return clearInterval(interval)
+      if (get().pet.status == PET_STATUS.IDLE) {
+        return clearInterval(interval)
+      }
 
-      set(({ stats: status }) => ({
-        stats: {
-          ...status,
-          energy: status.energy - BASE_MULTIPLIER * 2
+      set(({ pet }) => ({
+        pet: {
+          ...pet,
+          energy: pet.energy - BASE_MULTIPLIER * 2
         }
       }))
     }, TICK_TIME)
   },
 
   sleep: () => {
-    set(({ stats: status }) => ({ stats: { ...status, sleeping: true } }))
+    set(({ pet }) => ({ pet: { ...pet, status: PET_STATUS.SLEEPING } }))
 
     const interval = setInterval(() => {
-      if (get().stats.energy >= INITIAL_ENERGY) {
-        set(({ stats: status }) => ({ stats: { ...status, sleeping: false } }))
+      if (get().pet.energy >= BASE_ENERGY) {
+        set(({ pet }) => ({ pet: { ...pet, status: PET_STATUS.IDLE } }))
         return clearInterval(interval)
       }
 
-      set(({ stats: status }) => ({
-        stats: {
-          ...status,
-          energy: status.energy + BASE_MULTIPLIER * 1
+      set(({ pet }) => ({
+        pet: {
+          ...pet,
+          energy: pet.energy + BASE_MULTIPLIER * 1
         }
       }))
     }, TICK_TIME)

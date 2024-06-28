@@ -1,10 +1,15 @@
-export interface PetStats {
+export enum PET_STATUS {
+  IDLE,
+  EATING,
+  PLAYING,
+  SLEEPING,
+  CLEANING
+}
+
+export interface Pet {
   energy: number
   health: number
   hunger: number
   happiness: number
-
-  sleeping: boolean
-  playing: boolean
-  eating: boolean
+  status: PET_STATUS
 }
