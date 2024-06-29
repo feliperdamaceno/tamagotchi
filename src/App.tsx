@@ -1,8 +1,11 @@
-import { useGameStore } from '@/store/game'
+import { useEffect } from 'react'
+import { useGameStore, BASE_HEALTH, BASE_HUNGER } from '@/store/game'
 import { PET_STATUS } from '@/types'
 
 export default function App() {
   const game = useGameStore()
+
+  useEffect(game.init, [])
 
   return (
     <main className="container max-w-2xl p-8 mx-auto space-y-4">
@@ -36,15 +39,36 @@ export default function App() {
       <section className="space-y-4">
         <h2 className="text-lg font-bold">Controls:</h2>
 
-        <div>
+        <div className="flex gap-4">
           <button
-            disabled={
-              game.pet.status === PET_STATUS.SLEEPING ||
-              game.pet.status === PET_STATUS.EATING
-            }
+            disabled={game.pet.status === PET_STATUS.SLEEPING}
             onClick={() => game.play()}
           >
             {game.pet.status === PET_STATUS.PLAYING ? 'Pause' : 'Play'}
+          </button>
+
+          <button
+            disabled={
+              game.pet.status === PET_STATUS.SLEEPING ||
+              game.pet.hunger >= BASE_HUNGER
+            }
+            onClick={() => game.feed()}
+          >
+            {game.pet.status === PET_STATUS.EATING ? 'Stop' : 'Feed'}
+          </button>
+
+          <button
+            disabled={
+              game.pet.status === PET_STATUS.SLEEPING ||
+              game.pet.health >= BASE_HEALTH
+            }
+            onClick={() => game.clean()}
+          >
+            {game.pet.status === PET_STATUS.SHOWERING ? 'Stop' : 'Clean'}
+          </button>
+
+          <button onClick={() => game.sleep()}>
+            {game.pet.status === PET_STATUS.SLEEPING ? 'Wake-up' : 'Go Sleep'}
           </button>
         </div>
       </section>

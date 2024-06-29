@@ -2,8 +2,8 @@ export enum PET_STATUS {
   IDLE,
   EATING,
   PLAYING,
-  SLEEPING,
-  CLEANING
+  SHOWERING,
+  SLEEPING
 }
 
 export interface Pet {
