@@ -1,11 +1,19 @@
 import { useEffect } from 'react'
-import { useGameStore, BASE_HEALTH, BASE_HUNGER } from '@/store/game'
-import { PET_STATUS } from '@/types'
+import { useGameStore } from '@/store/game'
+import { PET_ACTION } from '@/types'
+import { MAX_STATS } from '@/constants'
 
 export default function App() {
   const game = useGameStore()
 
   useEffect(game.init, [])
+
+  useEffect(() => {
+    if (game.pet.dead) {
+      alert(`Your pet died by ${game.pet.cause}`)
+      // TODO: Add proper modal for this action.
+    }
+  }, [game.pet.dead])
 
   return (
     <main className="grid flex-1 place-items-center">
@@ -16,7 +24,7 @@ export default function App() {
           <section aria-label="display">
             <h2
               className={`text-center text-8xl ${
-                game.pet.status === PET_STATUS.SLEEPING
+                game.pet.action === PET_ACTION.SLEEPING
                   ? ' animate-pulse'
                   : ' animate-bounce'
               }`}
@@ -28,7 +36,7 @@ export default function App() {
           <section aria-label="status">
             <ul>
               {Object.entries(game.pet)
-                .filter(([key]) => key !== 'status')
+                .filter(([key]) => /energy|health|hunger|happiness/.test(key))
                 .map(([key, value]) => (
                   <li className="flex items-center justify-between gap-4 capitalize">
                     <span className="font-bold">{key}</span>
@@ -44,34 +52,34 @@ export default function App() {
 
           <section className="flex gap-4" aria-label="controls">
             <button
-              disabled={game.pet.status === PET_STATUS.SLEEPING}
+              disabled={game.pet.action === PET_ACTION.SLEEPING}
               onClick={game.play}
             >
-              {game.pet.status === PET_STATUS.PLAYING ? 'Pause' : 'Play'}
+              {game.pet.action === PET_ACTION.PLAYING ? 'Pause' : 'Play'}
             </button>
 
             <button
               disabled={
-                game.pet.status === PET_STATUS.SLEEPING ||
-                game.pet.hunger >= BASE_HUNGER
+                game.pet.action === PET_ACTION.SLEEPING ||
+                game.pet.hunger >= MAX_STATS
               }
               onClick={game.feed}
             >
-              {game.pet.status === PET_STATUS.EATING ? 'Stop' : 'Feed'}
+              {game.pet.action === PET_ACTION.EATING ? 'Stop' : 'Feed'}
             </button>
 
             <button
               disabled={
-                game.pet.status === PET_STATUS.SLEEPING ||
-                game.pet.health >= BASE_HEALTH
+                game.pet.action === PET_ACTION.SLEEPING ||
+                game.pet.health >= MAX_STATS
               }
               onClick={game.clean}
             >
-              {game.pet.status === PET_STATUS.SHOWERING ? 'Stop' : 'Clean'}
+              {game.pet.action === PET_ACTION.SHOWERING ? 'Stop' : 'Clean'}
             </button>
 
             <button onClick={game.sleep}>
-              {game.pet.status === PET_STATUS.SLEEPING ? 'Wake-up' : 'Go Sleep'}
+              {game.pet.action === PET_ACTION.SLEEPING ? 'Wake-up' : 'Go Sleep'}
             </button>
           </section>
         </div>
