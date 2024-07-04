@@ -1,7 +1,22 @@
 import { create } from 'zustand'
-import { Pet, PET_ACTION, DECREASE_RATE, DEATH_CAUSE } from '@/types'
-import { MAX_STATS, CRITICAL_STATUS, TICK_TIME } from '@/constants'
-import { toggleStatus, recoverPetStatus } from '@/store/helpers'
+import {
+  Pet,
+  PET_ACTION,
+  DECREASE_RATE,
+  DEATH_CAUSE,
+  RECOVERY_RATE
+} from '@/types'
+import {
+  MAX_STATS,
+  INITIAL_SIZE,
+  CRITICAL_STATUS,
+  TICK_TIME
+} from '@/constants'
+import {
+  toggleStatus,
+  recoverPetStatus,
+  calculatePetAge
+} from '@/store/helpers'
 
 /*
   Hunger, Happiness, Health decrease over time.
@@ -13,15 +28,25 @@ import { toggleStatus, recoverPetStatus } from '@/store/helpers'
   Playing restore Happiness.
 
   Status: Idle | Eating | Playing | Sleeping | Cleaning
-
-  TODO: Implement a timer to check how long the pet is alive.
-  TODO: Make pet small (scale), and grow overtime (2 minutes) and display age.
-  TODO: Display message when pet dies, and offer to restart.
 */
 
+const INITIAL_PET: Pet = {
+  action: PET_ACTION.IDLE,
+  dead: false,
+  cause: null,
+  age: { hours: 0, minutes: 0, seconds: 0 },
+  size: INITIAL_SIZE,
+  energy: MAX_STATS,
+  health: MAX_STATS,
+  hunger: MAX_STATS,
+  happiness: MAX_STATS
+}
+
 interface GameState {
+  _startedAt: Date
   pet: Pet
-  init: () => void
+  start: () => void
+  restart: () => void
   feed: () => void
   play: () => void
   clean: () => void
@@ -29,19 +54,15 @@ interface GameState {
 }
 
 export const useGameStore = create<GameState>((set, get) => ({
-  pet: {
-    energy: MAX_STATS,
-    health: MAX_STATS,
-    hunger: MAX_STATS,
-    happiness: MAX_STATS,
-    action: PET_ACTION.IDLE,
-    dead: false,
-    cause: null
-  },
+  _startedAt: new Date(),
+  pet: INITIAL_PET,
 
-  init: () => {
+  start: () => {
     const interval = setInterval(() => {
-      if (get().pet.dead) return clearInterval(interval)
+      if (get().pet.dead) {
+        clearInterval(interval)
+        return get().restart()
+      }
 
       if (get().pet.action !== PET_ACTION.SLEEPING) {
         set(({ pet }) => ({
@@ -67,10 +88,23 @@ export const useGameStore = create<GameState>((set, get) => ({
         }))
       }
 
+      set(({ pet }) => ({ pet: { ...pet, age: calculatePetAge() } }))
+
+      /*
+        Used to increase pet size over time.
+      */
+      if (get().pet.size < MAX_STATS) {
+        set(({ pet }) => ({
+          pet: { ...pet, size: pet.size + RECOVERY_RATE.SIZE }
+        }))
+      }
+
       /*
         Used to check if reached the critical status dying.
       */
       Object.entries(get().pet).forEach(([key, value]) => {
+        if (typeof value !== 'number') return
+
         if (value <= CRITICAL_STATUS) {
           set(({ pet }) => ({
             pet: {
@@ -82,6 +116,11 @@ export const useGameStore = create<GameState>((set, get) => ({
         }
       })
     }, TICK_TIME)
+  },
+
+  restart: () => {
+    set(() => ({ pet: INITIAL_PET, _startedAt: new Date() }))
+    get().start()
   },
 
   play: () => {

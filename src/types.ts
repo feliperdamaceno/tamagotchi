@@ -1,5 +1,11 @@
 import { BASE_MULTIPLIER } from '@/constants'
 
+export type Time = {
+  hours: number
+  minutes: number
+  seconds: number
+}
+
 export enum PET_ACTION {
   IDLE,
   EATING,
@@ -16,6 +22,7 @@ export enum DECREASE_RATE {
 }
 
 export enum RECOVERY_RATE {
+  SIZE = 0.00077, // approx. 15m to max size.
   ENERGY = DECREASE_RATE.ENERGY * BASE_MULTIPLIER,
   HEALTH = DECREASE_RATE.HEALTH * BASE_MULTIPLIER,
   HUNGER = DECREASE_RATE.HUNGER * BASE_MULTIPLIER,
@@ -30,13 +37,18 @@ export enum DEATH_CAUSE {
 }
 
 export interface Pet {
+  action: PET_ACTION
+  dead: boolean
+  cause: DEATH_CAUSE | null
+  age: Time
+  size: number
   energy: number
   health: number
   hunger: number
   happiness: number
-  action: PET_ACTION
-  dead: boolean
-  cause: DEATH_CAUSE | null
 }
 
-export type PetStatus = keyof Omit<Pet, 'dead' | 'cause' | 'action'>
+export type PetStatus = keyof Pick<
+  Pet,
+  'energy' | 'health' | 'hunger' | 'happiness'
+>

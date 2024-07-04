@@ -1,6 +1,6 @@
 import { useGameStore } from '@/store/game'
 
-import { PET_ACTION, PetStatus, RECOVERY_RATE } from '@/types'
+import { PET_ACTION, PetStatus, RECOVERY_RATE, Time } from '@/types'
 import { MAX_STATS } from '@/constants'
 
 /**
@@ -10,7 +10,7 @@ import { MAX_STATS } from '@/constants'
  *
  * @param status - The new action status to set for the pet.
  */
-export function toggleStatus(status: PET_ACTION) {
+export function toggleStatus(status: PET_ACTION): void {
   useGameStore.setState(({ pet }) => ({
     pet: { ...pet, action: pet.action === status ? PET_ACTION.IDLE : status }
   }))
@@ -23,7 +23,7 @@ export function toggleStatus(status: PET_ACTION) {
  * @param {PetStatus} status - The status to update (e.g., 'hunger', 'happiness').
  * @param {number} interval - The interval ID used to clear the update process.
  */
-export function recoverPetStatus(status: PetStatus, interval: number) {
+export function recoverPetStatus(status: PetStatus, interval: number): void {
   useGameStore.setState(({ pet }) => {
     if (pet.action === PET_ACTION.IDLE) {
       clearInterval(interval)
@@ -44,4 +44,32 @@ export function recoverPetStatus(status: PetStatus, interval: number) {
       }
     }
   })
+}
+
+/**
+ * Calculates the age of a pet in hours, minutes, and seconds.
+ *
+ * This function retrieves the start time of the game from the game store, calculates the
+ * time difference from the current time, and converts this difference into hours,
+ * minutes, and seconds.
+ *
+ * @returns {Time} An object representing the pet's age with properties:
+ *   - hours: The number of hours (0-23).
+ *   - minutes: The number of minutes (0-59).
+ *   - seconds: The number of seconds (0-59).
+ */
+export function calculatePetAge(): Time {
+  const { _startedAt } = useGameStore.getState()
+
+  const diff = Date.now() - _startedAt.getTime()
+
+  const seconds = Math.floor(diff / 1000)
+  const minutes = Math.floor(seconds / 60)
+  const hours = Math.floor(minutes / 60)
+
+  return {
+    hours: hours % 24,
+    minutes: minutes % 60,
+    seconds: seconds % 60
+  }
 }
