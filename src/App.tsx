@@ -2,6 +2,7 @@ import { useEffect } from 'react'
 import { useGameStore } from '@/store/game'
 import { PET_ACTION } from '@/types'
 import { MAX_STATS } from '@/constants'
+import whale from '@/assets/whale.svg'
 
 export default function App() {
   const game = useGameStore()
@@ -20,16 +21,15 @@ export default function App() {
   return (
     <main className="grid flex-1 place-items-center bg-zinc-900">
       <section className="w-full max-w-md" aria-label="game">
-        <div className="h-20 rounded-t-full bg-[#70a4ad]" />
+        <div className="h-20 rounded-t-full bg-primary" />
 
         <div className="p-12 space-y-8 bg-zinc-100">
           <section aria-label="display">
-            <div
+            <img
+              src={whale}
               style={{ scale: `${pet.size}%` }}
-              className={`text-center text-8xl ${animation}`}
-            >
-              🐋
-            </div>
+              className={`w-full mx-auto max-w-[8rem] ${animation}`}
+            />
           </section>
 
           <section aria-label="status">
@@ -45,7 +45,7 @@ export default function App() {
                       {key}: {Number(value).toFixed()}
                     </span>
                     <progress
-                      className="progress-bar:bg-gray-200 progress-value:bg-[#70a4ad] progress-bar:transition-all progress-filled:duration-500"
+                      className="progress-bar:bg-gray-200 progress-value:bg-primary progress-bar:transition-all progress-filled:duration-500"
                       max={100}
                       value={value}
                     />
@@ -86,9 +86,9 @@ export default function App() {
           </section>
         </div>
 
-        <div className="h-20 rounded-b-full bg-[#70a4ad] text-white font-medium grid place-items-center">
+        <div className="h-20 rounded-b-full bg-primary text-white font-medium grid place-items-center">
           <span>
-            Your pet is {`${age.hours}h ${age.minutes}m ${age.seconds}s`} old
+            Your whale is {`${age.hours}h ${age.minutes}m ${age.seconds}s`} old
           </span>
         </div>
       </section>
