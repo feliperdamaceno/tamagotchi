@@ -1,6 +1,6 @@
 ## Tamagotchi Game
 
-Minimal implementation of a Tamagotchi game built with React and Zustand.
+A basic Tamagotchi game built with React and Zustand, using straightforward state management to handle gameplay features.
 
 ![project-showcase](project-showcase/project-showcase.png)
 
